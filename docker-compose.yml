@@ -1,0 +1,26 @@
+version: '3'
+services:
+  my_app:
+    build:
+      context: ./my_app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - shared_volume:/Nouvarch/shared_volume
+    environment:
+      - FLASK_ENV=development
+
+  svm_service:
+    build:
+      context: ./svm_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - shared_volume:/Nouvarch/shared_volume
+    depends_on:
+      - my_app
+
+volumes:
+  shared_volume:
