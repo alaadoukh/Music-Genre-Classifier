@@ -1,0 +1,6 @@
+Flask==2.0.1
+Werkzeug==2.0.1
+requests==2.26.0
+librosa==0.10.1
+numpy==1.26.2
+tensorflow==2.15.0
