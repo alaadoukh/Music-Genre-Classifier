@@ -2,63 +2,39 @@ pipeline {
     agent any
     
     environment {
-        PYTHON_VERSION = '3.8'  // Change as needed
-        VIRTUALENV = "venv"
-        SVM_SERVICE_URL = "http://svm_service:8000"  // Update with your SVM service URL
-        VGG19_SERVICE_URL = "http://vgg19_service:9000"  // Update with your VGG19 service URL
+        DOCKER_COMPOSE_VERSION = '1.29.2'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Build and Start Services') {
             steps {
                 script {
-                    checkout scm
+                    sh "docker-compose up --build -d"
                 }
             }
         }
 
-        stage('Set up Python') {
+        stage('View Logs') {
             steps {
                 script {
-                    // Set up Python and create a virtual environment
-                    sh "pyenv install -s ${PYTHON_VERSION}"
-                    sh "pyenv global ${PYTHON_VERSION}"
-                    sh "python -m venv ${VIRTUALENV}"
-                    sh "source ${VIRTUALENV}/bin/activate"
-                    sh "pip install --upgrade pip"
+                    sh "docker-compose logs -f"
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run Tests') {
             steps {
                 script {
-                    sh "pip install -r requirements.txt"
+                    sh "docker-compose exec my_app python svm_service/tests/test_app.py"
+                    sh "docker-compose exec my_app python vgg19_service/tests/test_app.py"
                 }
             }
         }
 
-        stage('Run SVM Tests') {
+        stage('Stop Services') {
             steps {
                 script {
-                    sh "python svm_service/tests/test_app.py"
-                }
-            }
-        }
-
-        stage('Run VGG19 Tests') {
-            steps {
-                script {
-                    sh "python vgg19_service/tests/test_app.py"
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    // Deploy your application or services
-                    // You might want to use tools like Docker, Kubernetes, etc.
+                    sh "docker-compose down"
                 }
             }
         }
@@ -66,8 +42,7 @@ pipeline {
 
     post {
         always {
-            // Clean up and deactivate virtual environment
-            sh "deactivate"
+            
         }
     }
 }
