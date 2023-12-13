@@ -3,6 +3,7 @@ pipeline {
     
     environment {
         DOCKER_COMPOSE_VERSION = '1.29.2'
+        REPORT_DIR = 'test-reports'
     }
 
     stages {
@@ -14,27 +15,14 @@ pipeline {
             }
         }
 
-        stage('View Logs') {
-            steps {
-                script {
-                    sh "docker-compose logs -f"
-                }
-            }
-        }
-
         stage('Run Tests') {
             steps {
                 script {
-                    sh "docker-compose exec my_app python svm_service/tests/test_app.py"
-                    sh "docker-compose exec my_app python vgg19_service/tests/test_app.py"
-                }
-            }
-        }
+                    // Run SVM tests
+                    sh "docker-compose exec my_app python svm_service/tests/test_app.py --junit-xml=${REPORT_DIR}/svm_test_results.xml"
 
-        stage('Stop Services') {
-            steps {
-                script {
-                    sh "docker-compose down"
+                    // Run VGG19 tests
+                    sh "docker-compose exec my_app python vgg19_service/tests/test_app.py --junit-xml=${REPORT_DIR}/vgg19_test_results.xml"
                 }
             }
         }
@@ -42,7 +30,13 @@ pipeline {
 
     post {
         always {
-            
+            // Stop Services
+            script {
+                sh "docker-compose down"
+            }
+
+            // Publish JUnit test results
+            junit "**/${REPORT_DIR}/*.xml"
         }
     }
 }
