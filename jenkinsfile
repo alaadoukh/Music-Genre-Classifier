@@ -2,47 +2,63 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_IMAGE_MY_APP = 'my_docker_registry/my_app_image:latest'
-        DOCKER_IMAGE_SVM_SERVICE = 'my_docker_registry/svm_service_image:latest'
-        GENRE_PREDICTED = 'rock'  // Remplacez ceci par votre genre prédit
+        PYTHON_VERSION = '3.8'  // Change as needed
+        VIRTUALENV = "venv"
+        SVM_SERVICE_URL = "http://svm_service:8000"  // Update with your SVM service URL
+        VGG19_SERVICE_URL = "http://vgg19_service:9000"  // Update with your VGG19 service URL
     }
 
     stages {
-        stage('Build my_app Docker Image') {
+        stage('Checkout') {
             steps {
                 script {
-                    docker.build(DOCKER_IMAGE_MY_APP, '-f my_app/Dockerfile .')
+                    checkout scm
                 }
             }
         }
 
-        stage('Build svm_service Docker Image') {
+        stage('Set up Python') {
             steps {
                 script {
-                    docker.build(DOCKER_IMAGE_SVM_SERVICE, '-f svm_service/Dockerfile .')
+                    // Set up Python and create a virtual environment
+                    sh "pyenv install -s ${PYTHON_VERSION}"
+                    sh "pyenv global ${PYTHON_VERSION}"
+                    sh "python -m venv ${VIRTUALENV}"
+                    sh "source ${VIRTUALENV}/bin/activate"
+                    sh "pip install --upgrade pip"
                 }
             }
         }
 
-        stage('Run Docker Compose') {
+        stage('Install Dependencies') {
             steps {
                 script {
-                    sh 'docker-compose up -d'
+                    sh "pip install -r requirements.txt"
                 }
             }
         }
 
-        stage('Test Genre Prediction') {
+        stage('Run SVM Tests') {
             steps {
                 script {
-                    def genreDict = [0: 'blues', 1: 'classical', 2: 'country', 3: 'disco',
-                                    4: 'hiphop', 5: 'jazz', 6: 'metal', 7: 'pop', 8: 'reggae', 9: 'rock']
+                    sh "python svm_service/tests/test_app.py"
+                }
+            }
+        }
 
-                    if (genreDict.containsValue(GENRE_PREDICTED)) {
-                        echo "Le genre prédit existe dans la liste."
-                    } else {
-                        error "Le genre prédit n'existe pas dans la liste."
-                    }
+        stage('Run VGG19 Tests') {
+            steps {
+                script {
+                    sh "python vgg19_service/tests/test_app.py"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy your application or services
+                    // You might want to use tools like Docker, Kubernetes, etc.
                 }
             }
         }
@@ -50,9 +66,8 @@ pipeline {
 
     post {
         always {
-            script {
-                sh 'docker-compose down'
-            }
+            // Clean up and deactivate virtual environment
+            sh "deactivate"
         }
     }
 }
