@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE_MY_APP = 'my_docker_registry/my_app_image:latest'
+        DOCKER_IMAGE_SVM_SERVICE = 'my_docker_registry/svm_service_image:latest'
+        GENRE_PREDICTED = 'rock'  // Remplacez ceci par votre genre prédit
+    }
+
+    stages {
+        stage('Build my_app Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE_MY_APP, '-f my_app/Dockerfile .')
+                }
+            }
+        }
+
+        stage('Build svm_service Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE_SVM_SERVICE, '-f svm_service/Dockerfile .')
+                }
+            }
+        }
+
+        stage('Run Docker Compose') {
+            steps {
+                script {
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
+
+        stage('Test Genre Prediction') {
+            steps {
+                script {
+                    def genreDict = [0: 'blues', 1: 'classical', 2: 'country', 3: 'disco',
+                                    4: 'hiphop', 5: 'jazz', 6: 'metal', 7: 'pop', 8: 'reggae', 9: 'rock']
+
+                    if (genreDict.containsValue(GENRE_PREDICTED)) {
+                        echo "Le genre prédit existe dans la liste."
+                    } else {
+                        error "Le genre prédit n'existe pas dans la liste."
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh 'docker-compose down'
+            }
+        }
+    }
+}
