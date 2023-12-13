@@ -22,5 +22,16 @@ services:
     depends_on:
       - my_app
 
+  vgg19_service:
+    build:
+      context: ./vgg19_service
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - shared_volume:/Nouvarch/shared_volume
+    depends_on:
+      - my_app
+
 volumes:
   shared_volume:
