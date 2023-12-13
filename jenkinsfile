@@ -26,15 +26,17 @@ pipeline {
                 }
             }
         }
+
         stage('Publish Test Results') {
             steps {
                 script {
                     // Archive and publish JUnit test results
-                    junit 'svm_service/test-reports/**/*.xml'
-                    junit 'vgg19_service/test-reports/**/*.xml'
+                    junit "${REPORT_DIR}/svm_test_results.xml"
+                    junit "${REPORT_DIR}/vgg19_test_results.xml"
                 }
             }
         }
+    }
 
     post {
         always {
