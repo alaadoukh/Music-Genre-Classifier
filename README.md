@@ -1,12 +1,20 @@
 # Music Genre Classifier
 
-This project is a music genre classification web application. It utilizes Support Vector Machine (SVM) for audio files and VGG19 model for image files to predict the genre of the input.
+This project is a music genre classification, using two distinct services: SVM_service and vgg19_service. These services, hosted in the same Docker container, are designed to classify the musical genre of an audio file in WAV format, transmitted as base64 encoded data.
 
 ## Features
 
-- Music genre classification for audio files (SVM)
-- Music genre classification for image files (VGG19)
-- User-friendly web interface
+- svm_service: Uses a Support Vector Machine (SVM) model to classify music genres.
+- vgg19_service: Uses a VGG19 model to perform classification.
+- User-friendly web interface.
+
+## Data
+
+The Machine Learning models are trained on the datasetGTZAN dataset which offers a variety of musical genres, available on Kaggle :
+
+   ```bash
+   https://www.kaggle.com/datasets/andradaolteanu/gtzan-dataset-music-genre-classification
+   ```
 
 ## Project Structure
 
@@ -33,8 +41,8 @@ Make sure you have the following tools installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/music-genre-classifier.git
-   cd music-genre-classifier
+   git clone https://github.com/alaadoukh/Music-Genre-Classifier.git
+   cd Music-Genre-Classifier
 
 2. Build the Docker containers:
    ```bash
@@ -55,5 +63,6 @@ Make sure you have the following tools installed:
 
 1. Open the web application.
 2. Click on the "Choose an image file" button.
-3. Select an image file (PNG format).
+3. Select an image file (PNG format). Here's an example:
+   ![Disco](vgg19_service/tests/disco00056.png)
 4. Click "Upload and Classify."
